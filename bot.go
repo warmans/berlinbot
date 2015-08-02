@@ -6,6 +6,8 @@ import (
 	"io/ioutil"
 	"bytes"
 	"github.com/google/go-querystring/query"
+	"github.com/warmans/berlinbot/songkick"
+	"text/template"
 )
 
 const(
@@ -14,7 +16,8 @@ const(
 )
 
 type Bot struct {
-	Client *Client
+	Reddit *RedditClient
+	Songkick *songkick.SongkickClient
 }
 
 func (b *Bot) GetMe() {
@@ -26,7 +29,7 @@ func (b *Bot) GetMe() {
 		log.Fatal(err)
 	}
 
-	response, err := b.Client.DoAuthorized(request)
+	response, err := b.Reddit.DoAuthorized(request)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -34,6 +37,24 @@ func (b *Bot) GetMe() {
 	defer response.Body.Close()
 	bodyBytes, _ := ioutil.ReadAll(response.Body)
 	log.Print(string(bodyBytes))
+}
+
+func (b *Bot) SubmitEvents() {
+
+	tpl, err := template.ParseFiles(`post.tpl.md`)
+	if err != nil {
+		log.Printf(`Failed to render template: %s`, err.Error())
+		return
+	}
+
+	out := bytes.NewBufferString(``)
+	upcoming := b.Songkick.GetUpcoming(28443, 1)
+
+	if err := tpl.Execute(out, upcoming); err != nil {
+		log.Printf(`failed to execute template: %s`, err.Error())
+	}
+
+	b.Submit(SUBMIT_TYPE_SELF, `Events Monthly`, out.String(), `test`)
 }
 
 func (b *Bot) Submit(kind, title, text, subreddit string) {
@@ -57,7 +78,7 @@ func (b *Bot) Submit(kind, title, text, subreddit string) {
 	request.Header.Set(`Content-type`, `application/x-www-form-urlencoded`)
 	log.Print(request)
 
-	response, err := b.Client.DoAuthorized(request)
+	response, err := b.Reddit.DoAuthorized(request)
 	if err != nil {
 		log.Fatal(err)
 	}

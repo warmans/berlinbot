@@ -3,23 +3,35 @@ package main
 import (
 	"flag"
 	"net/http"
+	"github.com/warmans/berlinbot/songkick"
 )
 
 func main() {
 
-	var appId string
-	var appSecret string
-	var username string
-	var password string
+	var redditAppId string
+	var redditAppSecret string
+	var redditUsername string
+	var redditpassword string
 
-	flag.StringVar(&appId, `id`, ``, `app id`)
-	flag.StringVar(&appSecret, `sec`, ``, `app secret key`)
-	flag.StringVar(&username, `user`, ``, `user to post as`)
-	flag.StringVar(&password, `pass`, ``, `user password`)
+	var songkickKey string
 
-	client := &Client{HTTPClient: &http.Client{}}
-	client.CreateToken(appId, appSecret, username, password)
+	//reddit details required
+	flag.StringVar(&redditAppId, `reddit-id`, ``, `reddit app id`)
+	flag.StringVar(&redditAppSecret, `reddit-key`, ``, `reddit app secret key`)
+	flag.StringVar(&redditUsername, `reddit-user`, ``, `reddit user to post as`)
+	flag.StringVar(&redditpassword, `reddit-pass`, ``, `reddit user password`)
 
-	bot := &Bot{Client: client}
-	bot.Submit(SUBMIT_TYPE_SELF, `testing...`, `testing...`, `test`)
+	//songkick details required
+	flag.StringVar(&songkickKey, `songkick-key`, ``, `songkick api key`)
+
+	flag.Parse()
+
+	reddit := &RedditClient{HTTPClient: &http.Client{}}
+	reddit.CreateToken(redditAppId, redditAppSecret, redditUsername, redditpassword)
+
+	songkick := &songkick.SongkickClient{APIKey: songkickKey, HTTPClient: &http.Client{}}
+
+	//execute
+	bot := &Bot{Reddit: reddit, Songkick: songkick}
+	bot.SubmitEvents()
 }
