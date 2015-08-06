@@ -7,6 +7,13 @@ import (
 	"encoding/json"
 	"time"
 	"net/url"
+	"github.com/google/go-querystring/query"
+	"io/ioutil"
+)
+
+const(
+	SUBMIT_TYPE_SELF = "self"
+	SUBMIT_TYPE_LINK = "link"
 )
 
 type RedditClient struct {
@@ -46,6 +53,39 @@ func (c *RedditClient) DoAuthorized(request *http.Request) (*http.Response, erro
 
 	return c.HTTPClient.Do(request)
 }
+
+func (r *RedditClient) Submit(kind, title, text, subreddit string) {
+	log.Print(`Submitting...`)
+
+	bodyContent := SubmitRequest{
+		Kind: kind,
+		Title: title,
+		Text: text,
+		SR: subreddit,
+		Resubmit: true,
+	}
+
+	v, _ := query.Values(bodyContent)
+	bodyBuffer := bytes.NewBufferString(v.Encode())
+
+	request, err := http.NewRequest("POST", "https://oauth.reddit.com/api/submit", bodyBuffer)
+	if err != nil {
+		log.Fatal(err)
+	}
+	request.Header.Set(`Content-type`, `application/x-www-form-urlencoded`)
+	log.Print(request)
+
+	response, err := r.DoAuthorized(request)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Print(response)
+
+	defer response.Body.Close()
+	bodyBytes, _ := ioutil.ReadAll(response.Body)
+	log.Print(string(bodyBytes))
+}
+
 
 type AuthResponse struct {
 	Created     int

@@ -23,7 +23,6 @@ func main() {
 
 	//songkick details required
 	flag.StringVar(&songkickKey, `songkick-key`, ``, `songkick api key`)
-
 	flag.Parse()
 
 	reddit := &RedditClient{HTTPClient: &http.Client{}}
