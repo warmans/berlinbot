@@ -5,14 +5,16 @@ import (
 	"bytes"
 	"github.com/warmans/berlinbot/songkick"
 	"text/template"
+	"github.com/warmans/berlinbot/spotify"
 )
 
 type Bot struct {
-	Reddit *RedditClient
+	Reddit   *RedditClient
 	Songkick *songkick.SongkickClient
+	Spotify  *spotify.Spotify
 }
 
-func (b *Bot) SubmitEvents() {
+func (b *Bot) SubmitEvents(sub, title string) {
 
 	tpl, err := template.ParseFiles(`post.tpl.md`)
 	if err != nil {
@@ -27,6 +29,6 @@ func (b *Bot) SubmitEvents() {
 		log.Printf(`failed to execute template: %s`, err.Error())
 	}
 
-	b.Reddit.Submit(SUBMIT_TYPE_SELF, `Events Monthly`, out.String(), `test`)
+	b.Reddit.Submit(SUBMIT_TYPE_SELF, title, out.String(), sub)
 }
 
