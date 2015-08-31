@@ -1,9 +1,4 @@
-Concerts this Month
-======================
-
-The following concerts are happening this month.
-
-| Date | Event | Venue | Artist(s) | Info |
-|------|-------|-------|-----------|------|
-{{range .}}|{{.Start.Date}} | {{.Displayname}} | {{.Venue.Displayname}} | {{range .Performance}}{{.Artist.Displayname}},{{end}} | [Songkick]({{.URI}})|
+| Popularity | Date | Genre(s) | Event | Venue | Artist(s) | Info |
+|------------|------|----------|-------|-------|-----------|------|
+{{range .Events}}| {{printf "%.2f" .Popularity}} | {{.Date}} | {{join .Genres ", "}} | {{.Name}} | {{.Venue}} | {{join .Artists ", "}} | {{link_map .Links}} |
 {{end}}

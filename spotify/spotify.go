@@ -45,8 +45,8 @@ type Spotify struct {
 	HTTPClient *http.Client
 }
 
-func (s Spotify) GuessArtist(name string) *Artist {
-	data, err := s.HTTPClient.Get(`https://api.spotify.com/v1/search?q=` + url.QueryEscape(name) + `&type=artist`)
+func (s Spotify) GetArtistByName(artistName string) *Artist {
+	data, err := s.HTTPClient.Get(`https://api.spotify.com/v1/search?q=` + url.QueryEscape(artistName) + `&type=artist`)
 	if err != nil {
 		log.Print(err.Error())
 		return nil
@@ -63,3 +63,14 @@ func (s Spotify) GuessArtist(name string) *Artist {
 	return &result.Artists.Items[0]
 }
 
+func (s Spotify) GetArtistGenre(artistName string) string {
+	artist := s.GetArtistByName(artistName)
+	if artist == nil {
+		return ""
+	}
+	if len(artist.Genres) == 0 {
+		return ""
+	}
+
+	return artist.Genres[0]
+}
